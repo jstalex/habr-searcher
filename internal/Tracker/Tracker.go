@@ -31,14 +31,14 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 
 	url := fmt.Sprintf("https://habr.com/ru/search/?q=%s&target_type=posts&order=date", p.SearchReq)
 	res, err := http.Get(url)
-	check(err)
+	Check(err)
 	body := res.Body
 	defer body.Close()
 
 	//io.Copy(os.Stdout, searchPage)
 
 	searchPage, err := goquery.NewDocumentFromReader(body)
-	check(err)
+	Check(err)
 
 	newestPost := searchPage.Find(".tm-articles-list").Find("article").First()
 
@@ -46,7 +46,7 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 	attrIsOk(ok)
 
 	pTime, err := time.Parse(time.RFC3339, publishTime)
-	check(err)
+	Check(err)
 
 	if pTime.After(p.lastTime) {
 		return newPost, false
@@ -59,7 +59,7 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 	attrIsOk(ok)
 
 	postName, err := newestPost.Find("h2").Find("a").Find("span").Html()
-	check(err)
+	Check(err)
 
 	link, ok := newestPost.Find("h2").Find("a").Attr("href")
 	attrIsOk(ok)
@@ -72,7 +72,7 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 	return newPost, true
 }
 
-func check(err error) {
+func Check(err error) {
 	if err != nil {
 		log.Println(err.Error())
 	}
