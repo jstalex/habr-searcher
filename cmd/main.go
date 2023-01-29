@@ -1,8 +1,10 @@
 package main
 
-import hp "habr-searcher/internal/habr-parser"
+import (
+	app "habr-searcher/internal/app"
+)
 
 func main() {
-	fprser := hp.New("go")
-	fprser.GetNewPost()
+	a := app.New()
+	a.Run()
 }

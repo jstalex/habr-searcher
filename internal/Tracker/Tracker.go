@@ -1,4 +1,4 @@
-package habr_parser
+package Tracker
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type Parser struct {
+type Tracker struct {
 	SearchReq string
 	lastTime  time.Time
 }
@@ -19,14 +19,14 @@ type Post struct {
 	Author string
 }
 
-func New(req string) *Parser {
-	return &Parser{
+func New(req string) *Tracker {
+	return &Tracker{
 		SearchReq: req,
 		lastTime:  time.Now(),
 	}
 }
 
-func (p *Parser) GetNewPost() (Post, bool) {
+func (p *Tracker) GetNewPost() (Post, bool) {
 	newPost := Post{}
 
 	url := fmt.Sprintf("https://habr.com/ru/search/?q=%s&target_type=posts&order=date", p.SearchReq)
@@ -52,8 +52,8 @@ func (p *Parser) GetNewPost() (Post, bool) {
 		return newPost, false
 	}
 
-	postId, ok := newestPost.Attr("id")
-	attrIsOk(ok)
+	//postId, ok := newestPost.Attr("id")
+	//attrIsOk(ok)
 
 	author, ok := newestPost.Find(".tm-user-info tm-article-snippet__author").Find("a").Attr("title")
 	attrIsOk(ok)
@@ -65,7 +65,10 @@ func (p *Parser) GetNewPost() (Post, bool) {
 	attrIsOk(ok)
 	link = fmt.Sprintf("https://habr.com%s", link)
 
-	fmt.Println(postId, publishTime, postName, author, link, pTime)
+	newPost.Name = postName
+	newPost.Link = link
+	newPost.Author = author
+
 	return newPost, true
 }
 
