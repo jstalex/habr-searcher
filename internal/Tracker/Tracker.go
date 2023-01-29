@@ -55,7 +55,7 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 	//postId, ok := newestPost.Attr("id")
 	//attrIsOk(ok)
 
-	author, ok := newestPost.Find(".tm-user-info tm-article-snippet__author").Find("a").Attr("title")
+	author, ok := newestPost.Find(".tm-user-info__userpic").Attr("title")
 	attrIsOk(ok)
 
 	postName, err := newestPost.Find("h2").Find("a").Find("span").Html()
