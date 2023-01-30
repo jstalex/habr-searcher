@@ -19,6 +19,8 @@ func New() *Bot {
 
 	tgbot, err := tgbotapi.NewBotAPI(token)
 	t.Check(err)
+
+	tgbot.Debug = true
 	return &Bot{
 		TgBot: tgbot,
 	}
