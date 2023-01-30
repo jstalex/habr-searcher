@@ -1,9 +1,10 @@
 package app
 
 import (
-	"fmt"
 	t "habr-searcher/internal/Tracker"
 	"habr-searcher/internal/bot"
+	"log"
+	"strings"
 )
 
 type App struct {
@@ -11,6 +12,7 @@ type App struct {
 	TgBot       *bot.Bot
 	UsersForTag map[string][]User
 	users       []User
+	subChannel  chan string
 }
 
 type User struct {
@@ -21,13 +23,15 @@ func New() *App {
 	Trackers := make(map[string]*t.Tracker)
 	UsersForTag := make(map[string][]User)
 	users := make([]User, 0)
-	tgBot := bot.New()
+	sc := make(chan string)
+	tgBot := bot.New(sc)
 
 	return &App{
 		Trackers:    Trackers,
 		TgBot:       tgBot,
 		UsersForTag: UsersForTag,
 		users:       users,
+		subChannel:  sc,
 	}
 }
 
@@ -37,9 +41,13 @@ func (a *App) AddNewTracker(tag string) {
 }
 
 func (a *App) Run() {
-	a.AddNewTracker("go")
-	post, _ := a.Trackers["go"].GetNewPost()
-	fmt.Printf("%v\n", post)
+	//a.AddNewTracker("go")
+	//post, _ := a.Trackers["go"].GetNewPost()
+	//fmt.Printf("%v\n", post)
+	go a.TgBot.Run()
+	for {
+		a.CheckNewSubscribe()
+	}
 }
 
 func (a *App) AddNewUser(u User) {
@@ -51,6 +59,8 @@ func (a *App) SubscribeNewTagToUser(u User, tag string) {
 		a.AddNewTracker(tag)
 		a.UsersForTag[tag] = make([]User, 0)
 		a.UsersForTag[tag] = append(a.UsersForTag[tag], u)
+		log.Println("SUCCESS")
+		log.Println(a.Trackers)
 	} else {
 		a.UsersForTag[tag] = append(a.UsersForTag[tag], u)
 	}
@@ -66,3 +76,12 @@ func (a *App) SubscribeNewTagToUser(u User, tag string) {
 //		}
 //	}
 //}
+
+func (a *App) CheckNewSubscribe() {
+	str, ok := <-a.subChannel
+	values := strings.Split(str, " ")
+	tag, id := values[0], values[1]
+	if ok {
+		a.SubscribeNewTagToUser(User{id}, tag)
+	}
+}

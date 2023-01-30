@@ -1,6 +1,7 @@
 package bot
 
 import (
+	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	t "habr-searcher/internal/Tracker"
 	"log"
@@ -8,10 +9,11 @@ import (
 )
 
 type Bot struct {
-	TgBot *tgbotapi.BotAPI
+	TgBot      *tgbotapi.BotAPI
+	subChannel chan string
 }
 
-func New() *Bot {
+func New(sc chan string) *Bot {
 	token, exist := os.LookupEnv("TokenForHabrSearcher")
 	if !exist {
 		log.Println("Token for Tg api does not exist")
@@ -22,6 +24,51 @@ func New() *Bot {
 
 	tgbot.Debug = true
 	return &Bot{
-		TgBot: tgbot,
+		TgBot:      tgbot,
+		subChannel: sc,
 	}
+}
+
+func (b *Bot) Run() {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 5
+
+	updates := b.TgBot.GetUpdatesChan(u)
+
+	for update := range updates {
+		if update.Message == nil /* || !update.Message.IsCommand() */ {
+			continue // ignore non-command and non-message
+		}
+
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+		if update.Message.IsCommand() {
+			switch update.Message.Command() {
+			case "start":
+				// нужно добавить юзера, трекер, и подписать его туда, запрсив тег
+				msg.Text = "Hello, bot is active!\nEnter your tag:"
+				_, err := b.TgBot.Send(msg)
+				t.Check(err)
+				//case "addTag":
+				//	msg.Text = "Enter new tag:"
+				//	_, err := b.TgBot.Send(msg)
+				//	t.Check(err)
+				//	b.requestNewTag(update.Message.Chat.ID, update.UpdateID+1)
+				//	msg.Text = "Your tag successfully added"
+				//	_, err = b.TgBot.Send(msg)
+				//	t.Check(err)
+				//}
+			}
+		} else {
+			id := update.Message.Chat.ID
+			tag := update.Message.Text
+
+			tagAndId := fmt.Sprintf("%s %d", tag, id)
+			b.subChannel <- tagAndId
+
+			msg.Text = "Your tag successfully added"
+			_, err := b.TgBot.Send(msg)
+			t.Check(err)
+		}
+	}
+
 }
