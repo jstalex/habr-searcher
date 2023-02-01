@@ -13,16 +13,12 @@ type Tracker struct {
 	lastTime  time.Time
 }
 
-type Post struct {
-	Name   string
-	Link   string
-	Author string
-}
-
 func New(req string) *Tracker {
+	t, err := time.Parse(time.RFC3339, "2023-01-26T10:32:31.000Z")
+	Check(err)
 	return &Tracker{
 		SearchReq: req,
-		lastTime:  time.Now(),
+		lastTime:  t,
 	}
 }
 
@@ -31,6 +27,7 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 
 	url := fmt.Sprintf("https://habr.com/ru/search/?q=%s&target_type=posts&order=date", p.SearchReq)
 	res, err := http.Get(url)
+	log.Printf("habr req status = %s\n", res.Status)
 	Check(err)
 	body := res.Body
 	defer body.Close()
@@ -48,7 +45,7 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 	pTime, err := time.Parse(time.RFC3339, publishTime)
 	Check(err)
 
-	if pTime.After(p.lastTime) {
+	if !pTime.After(p.lastTime) {
 		return newPost, false
 	}
 
@@ -68,6 +65,8 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 	newPost.Name = postName
 	newPost.Link = link
 	newPost.Author = author
+
+	p.lastTime = pTime
 
 	return newPost, true
 }

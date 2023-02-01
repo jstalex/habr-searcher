@@ -5,6 +5,7 @@ import (
 	"habr-searcher/internal/bot"
 	"log"
 	"strings"
+	"time"
 )
 
 type App struct {
@@ -46,7 +47,9 @@ func (a *App) Run() {
 	//fmt.Printf("%v\n", post)
 	go a.TgBot.Run()
 	for {
-		a.CheckNewSubscribe()
+		go a.CheckNewPosts()
+		go a.CheckNewSubscribe()
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -66,16 +69,16 @@ func (a *App) SubscribeNewTagToUser(u User, tag string) {
 	}
 }
 
-//func (a *App) CheckNewPosts() {
-//	for tag, tracker := range a.Trackers{
-//		post, exist := tracker.GetNewPost()
-//		if exist {
-//			for _, user := range a.UsersForTag[tag] {
-//				// send message from bot
-//			}
-//		}
-//	}
-//}
+func (a *App) CheckNewPosts() {
+	for tag, tracker := range a.Trackers {
+		post, exist := tracker.GetNewPost()
+		if exist {
+			for _, user := range a.UsersForTag[tag] {
+				a.TgBot.SendMessage(user.chatId, post.InString())
+			}
+		}
+	}
+}
 
 func (a *App) CheckNewSubscribe() {
 	str, ok := <-a.subChannel

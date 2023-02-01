@@ -6,6 +6,7 @@ import (
 	t "habr-searcher/internal/Tracker"
 	"log"
 	"os"
+	"strconv"
 )
 
 type Bot struct {
@@ -16,7 +17,7 @@ type Bot struct {
 func New(sc chan string) *Bot {
 	token, exist := os.LookupEnv("TokenForHabrSearcher")
 	if !exist {
-		log.Println("Token for Tg api does not exist")
+		log.Fatal("Token for Tg api does not exist")
 	}
 
 	tgbot, err := tgbotapi.NewBotAPI(token)
@@ -71,4 +72,12 @@ func (b *Bot) Run() {
 		}
 	}
 
+}
+
+func (b *Bot) SendMessage(chatId, text string) {
+	idAsNumber, err := strconv.Atoi(chatId)
+	t.Check(err)
+	msg := tgbotapi.NewMessage(int64(idAsNumber), text)
+	_, err = b.TgBot.Send(msg)
+	t.Check(err)
 }
