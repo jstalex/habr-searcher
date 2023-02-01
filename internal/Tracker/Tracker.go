@@ -14,7 +14,7 @@ type Tracker struct {
 }
 
 func New(req string) *Tracker {
-	t, err := time.Parse(time.RFC3339, "2023-01-26T10:32:31.000Z")
+	t, err := time.Parse(time.RFC3339, "2022-02-22T10:00:00.000Z")
 	Check(err)
 	return &Tracker{
 		SearchReq: req,

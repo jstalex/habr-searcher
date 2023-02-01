@@ -9,5 +9,5 @@ type Post struct {
 }
 
 func (p *Post) InString() string {
-	return fmt.Sprintf("%s\n%s\n%s\n", p.Author, p.Name, p.Link)
+	return fmt.Sprintf("Author: %s\n%s\n%s\n", p.Author, p.Name, p.Link)
 }

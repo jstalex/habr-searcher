@@ -46,18 +46,13 @@ func (b *Bot) Run() {
 			switch update.Message.Command() {
 			case "start":
 				// нужно добавить юзера, трекер, и подписать его туда, запрсив тег
-				msg.Text = "Hello, bot is active!\nEnter your tag:"
+				msg.Text = "Hello, I can help you to track new posts from habr.com!\nAs soon as the post is published, I'll send you a link\nSo, enter your tag:"
 				_, err := b.TgBot.Send(msg)
 				t.Check(err)
-				//case "addTag":
-				//	msg.Text = "Enter new tag:"
-				//	_, err := b.TgBot.Send(msg)
-				//	t.Check(err)
-				//	b.requestNewTag(update.Message.Chat.ID, update.UpdateID+1)
-				//	msg.Text = "Your tag successfully added"
-				//	_, err = b.TgBot.Send(msg)
-				//	t.Check(err)
-				//}
+			case "addtag":
+				msg.Text = "Enter new tag:"
+				_, err := b.TgBot.Send(msg)
+				t.Check(err)
 			}
 		} else {
 			id := update.Message.Chat.ID
