@@ -49,7 +49,7 @@ func (a *App) Run() {
 	for {
 		go a.CheckNewPosts()
 		go a.CheckNewSubscribe()
-		time.Sleep(1 * time.Second)
+		time.Sleep(3 * time.Second)
 	}
 }
 
@@ -66,6 +66,8 @@ func (a *App) SubscribeNewTagToUser(u User, tag string) {
 		log.Println(a.Trackers)
 	} else {
 		a.UsersForTag[tag] = append(a.UsersForTag[tag], u)
+		log.Println("SUCCESS")
+		log.Println(a.Trackers)
 	}
 }
 
@@ -82,6 +84,7 @@ func (a *App) CheckNewPosts() {
 
 func (a *App) CheckNewSubscribe() {
 	str, ok := <-a.subChannel
+	log.Printf("im got info from chan %s %v\n", str, ok)
 	values := strings.Split(str, " ")
 	tag, id := values[0], values[1]
 	if ok {

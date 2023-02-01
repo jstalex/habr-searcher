@@ -23,7 +23,7 @@ func New(sc chan string) *Bot {
 	tgbot, err := tgbotapi.NewBotAPI(token)
 	t.Check(err)
 
-	tgbot.Debug = true
+	// tgbot.Debug = true
 	return &Bot{
 		TgBot:      tgbot,
 		subChannel: sc,

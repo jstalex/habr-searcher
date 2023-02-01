@@ -29,6 +29,12 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 	res, err := http.Get(url)
 	log.Printf("habr req status = %s\n", res.Status)
 	Check(err)
+
+	if res.ContentLength == 0 {
+		log.Println("empty body")
+		return Post{}, false
+	}
+
 	body := res.Body
 	defer body.Close()
 
