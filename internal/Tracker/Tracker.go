@@ -30,11 +30,6 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 	log.Printf("habr req status = %s\n", res.Status)
 	Check(err)
 
-	if res.ContentLength == 0 {
-		log.Println("empty body")
-		return Post{}, false
-	}
-
 	body := res.Body
 	defer body.Close()
 
@@ -44,6 +39,11 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 	Check(err)
 
 	newestPost := searchPage.Find(".tm-articles-list").Find("article").First()
+
+	if len(newestPost.Text()) == 0 {
+		log.Println("This tag's posts not exist")
+		return newPost, false
+	}
 
 	publishTime, ok := newestPost.Find(".tm-article-snippet__datetime-published").Find("time").Attr("datetime")
 	attrIsOk(ok)
