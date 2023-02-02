@@ -5,7 +5,7 @@ import (
 	"habr-searcher/internal/bot"
 	"log"
 	"strings"
-	"time"
+	"sync"
 )
 
 type App struct {
@@ -14,6 +14,7 @@ type App struct {
 	UsersForTag map[string][]User
 	users       []User
 	subChannel  chan string
+	wg          sync.WaitGroup
 }
 
 type User struct {
@@ -26,6 +27,7 @@ func New() *App {
 	users := make([]User, 0)
 	sc := make(chan string)
 	tgBot := bot.New(sc)
+	var wg sync.WaitGroup
 
 	return &App{
 		Trackers:    Trackers,
@@ -33,6 +35,7 @@ func New() *App {
 		UsersForTag: UsersForTag,
 		users:       users,
 		subChannel:  sc,
+		wg:          wg,
 	}
 }
 
@@ -44,9 +47,10 @@ func (a *App) AddNewTracker(tag string) {
 func (a *App) Run() {
 	go a.TgBot.Run()
 	for {
+		a.wg.Add(2)
 		go a.CheckNewPosts()
 		go a.CheckNewSubscribe()
-		time.Sleep(10 * time.Second)
+		a.wg.Wait()
 	}
 }
 
@@ -69,6 +73,7 @@ func (a *App) SubscribeNewTagToUser(u User, tag string) {
 }
 
 func (a *App) CheckNewPosts() {
+	defer a.wg.Done()
 	for tag, tracker := range a.Trackers {
 		post, exist := tracker.GetNewPost()
 		if exist {
@@ -80,6 +85,7 @@ func (a *App) CheckNewPosts() {
 }
 
 func (a *App) CheckNewSubscribe() {
+	defer a.wg.Done()
 	str, ok := <-a.subChannel
 	log.Printf("im got info from chan %s %v\n", str, ok)
 	values := strings.Split(str, "#")
