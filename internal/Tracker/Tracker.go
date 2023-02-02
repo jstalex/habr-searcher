@@ -14,7 +14,8 @@ type Tracker struct {
 }
 
 func New(req string) *Tracker {
-	t, err := time.Parse(time.RFC3339, "2022-02-22T10:00:00.000Z")
+	// setting this date allow get last post, when tag added at first time
+	t, err := time.Parse(time.RFC3339, "2022-02-22T10:00:00.000Z") // bcs i love number 2 :)
 	Check(err)
 	return &Tracker{
 		SearchReq: req,
@@ -27,8 +28,13 @@ func (p *Tracker) GetNewPost() (Post, bool) {
 
 	url := fmt.Sprintf("https://habr.com/ru/search/?q=%s&target_type=posts&order=date", p.SearchReq)
 	res, err := http.Get(url)
-	log.Printf("habr req status = %s\n", res.Status)
 	Check(err)
+
+	if res == nil {
+		return newPost, false
+	}
+
+	log.Printf("habr req status = %s\n", res.Status)
 
 	body := res.Body
 	defer body.Close()

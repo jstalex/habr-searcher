@@ -17,6 +17,8 @@ type Bot struct {
 const startText string = "Hello, I can help you to track new posts from habr.com!\nAs soon as the post is published, I'll send you a link\nSo, enter your tag:"
 const helpText string = "Welcome!\n/start - start bot and follow instructions\n/addtag - subscribe on new tag tracking\nFor questions : @jstal3x\nproject in developing..."
 
+const updateTimeout int = 5
+
 func New(sc chan string) *Bot {
 	token, exist := os.LookupEnv("TokenForHabrSearcher")
 	if !exist {
@@ -35,7 +37,7 @@ func New(sc chan string) *Bot {
 
 func (b *Bot) Run() {
 	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 5
+	u.Timeout = updateTimeout
 
 	updates := b.TgBot.GetUpdatesChan(u)
 
@@ -48,7 +50,6 @@ func (b *Bot) Run() {
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "start":
-				// нужно добавить юзера, трекер, и подписать его туда, запрсив тег
 				msg.Text = startText
 				b.send(msg)
 			case "addtag":

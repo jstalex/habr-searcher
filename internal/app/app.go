@@ -5,7 +5,10 @@ import (
 	"habr-searcher/internal/bot"
 	"log"
 	"strings"
+	"time"
 )
+
+const updateDelay int = 3 // in seconds
 
 type App struct {
 	Trackers    map[string]*t.Tracker
@@ -23,7 +26,6 @@ type User struct {
 func New() *App {
 	Trackers := make(map[string]*t.Tracker)
 	UsersForTag := make(map[string][]User)
-	users := make([]User, 0)
 	sc := make(chan string)
 	tgBot := bot.New(sc)
 	//wg := &sync.WaitGroup{}
@@ -32,7 +34,6 @@ func New() *App {
 		Trackers:    Trackers,
 		TgBot:       tgBot,
 		UsersForTag: UsersForTag,
-		users:       users,
 		subChannel:  sc,
 		//wg:          wg,
 	}
@@ -45,16 +46,8 @@ func (a *App) AddNewTracker(tag string) {
 
 func (a *App) Run() {
 	go a.TgBot.Run()
-	for {
-		//a.wg.Add(2)
-		a.CheckNewSubscribe()
-		a.CheckNewPosts()
-		//a.wg.Wait()
-	}
-}
-
-func (a *App) AddNewUser(u User) {
-	a.users = append(a.users, u)
+	go a.CheckNewSubscribe()
+	a.CheckNewPosts()
 }
 
 func (a *App) SubscribeNewTagToUser(u User, tag string) {
@@ -73,23 +66,29 @@ func (a *App) SubscribeNewTagToUser(u User, tag string) {
 
 func (a *App) CheckNewPosts() {
 	//defer a.wg.Done()
-	for tag, tracker := range a.Trackers {
-		post, exist := tracker.GetNewPost()
-		if exist {
-			for _, user := range a.UsersForTag[tag] {
-				a.TgBot.SendPost(user.chatId, post.InString())
+	for {
+		for tag, tracker := range a.Trackers {
+			post, exist := tracker.GetNewPost()
+			if exist {
+				for _, user := range a.UsersForTag[tag] {
+					a.TgBot.SendPost(user.chatId, post.InString())
+				}
 			}
 		}
+		time.Sleep(time.Duration(updateDelay) * time.Second)
 	}
 }
 
 func (a *App) CheckNewSubscribe() {
 	//defer a.wg.Done()
-	str, ok := <-a.subChannel
-	log.Printf("im got info from chan %s %v\n", str, ok)
-	values := strings.Split(str, "#")
-	tag, id := values[0], values[1]
-	if ok {
-		a.SubscribeNewTagToUser(User{id}, tag)
+	// auto locking by subChannel
+	for {
+		str, ok := <-a.subChannel
+		log.Printf("im got info from chan %s %v\n", str, ok)
+		values := strings.Split(str, "#")
+		tag, id := values[0], values[1]
+		if ok {
+			a.SubscribeNewTagToUser(User{id}, tag)
+		}
 	}
 }
