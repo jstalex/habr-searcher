@@ -47,10 +47,10 @@ func (a *App) AddNewTracker(tag string) {
 func (a *App) Run() {
 	go a.TgBot.Run()
 	for {
-		a.wg.Add(2)
-		go a.CheckNewPosts()
-		go a.CheckNewSubscribe()
-		a.wg.Wait()
+		//a.wg.Add(2)
+		a.CheckNewSubscribe()
+		a.CheckNewPosts()
+		//a.wg.Wait()
 	}
 }
 
