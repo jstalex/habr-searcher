@@ -14,7 +14,7 @@ type App struct {
 	UsersForTag map[string][]User
 	users       []User
 	subChannel  chan string
-	wg          sync.WaitGroup
+	wg          *sync.WaitGroup
 }
 
 type User struct {
@@ -27,7 +27,7 @@ func New() *App {
 	users := make([]User, 0)
 	sc := make(chan string)
 	tgBot := bot.New(sc)
-	var wg sync.WaitGroup
+	wg := &sync.WaitGroup{}
 
 	return &App{
 		Trackers:    Trackers,
@@ -78,7 +78,7 @@ func (a *App) CheckNewPosts() {
 		post, exist := tracker.GetNewPost()
 		if exist {
 			for _, user := range a.UsersForTag[tag] {
-				a.TgBot.SendMessage(user.chatId, post.InString())
+				a.TgBot.SendPost(user.chatId, post.InString())
 			}
 		}
 	}

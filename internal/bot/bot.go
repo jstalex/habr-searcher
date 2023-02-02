@@ -50,16 +50,13 @@ func (b *Bot) Run() {
 			case "start":
 				// нужно добавить юзера, трекер, и подписать его туда, запрсив тег
 				msg.Text = startText
-				_, err := b.TgBot.Send(msg)
-				t.Check(err)
+				b.send(msg)
 			case "addtag":
 				msg.Text = "Enter new tag:"
-				_, err := b.TgBot.Send(msg)
-				t.Check(err)
+				b.send(msg)
 			case "help":
 				msg.Text = helpText
-				_, err := b.TgBot.Send(msg)
-				t.Check(err)
+				b.send(msg)
 			}
 		} else {
 			id := update.Message.Chat.ID
@@ -69,12 +66,10 @@ func (b *Bot) Run() {
 				b.subChannel <- tagAndId
 
 				msg.Text = "Your tag successfully added"
-				_, err := b.TgBot.Send(msg)
-				t.Check(err)
+				b.send(msg)
 			} else {
 				msg.Text = "Please, try again"
-				_, err := b.TgBot.Send(msg)
-				t.Check(err)
+				b.send(msg)
 			}
 
 		}
@@ -82,10 +77,15 @@ func (b *Bot) Run() {
 
 }
 
-func (b *Bot) SendMessage(chatId, text string) {
+func (b *Bot) SendPost(chatId, text string) {
 	idAsNumber, err := strconv.Atoi(chatId)
 	t.Check(err)
 	msg := tgbotapi.NewMessage(int64(idAsNumber), text)
 	_, err = b.TgBot.Send(msg)
+	t.Check(err)
+}
+
+func (b *Bot) send(msg tgbotapi.Chattable) {
+	_, err := b.TgBot.Send(msg)
 	t.Check(err)
 }
