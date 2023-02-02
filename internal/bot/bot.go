@@ -14,6 +14,9 @@ type Bot struct {
 	subChannel chan string
 }
 
+const startText string = "Hello, I can help you to track new posts from habr.com!\nAs soon as the post is published, I'll send you a link\nSo, enter your tag:"
+const helpText string = "Welcome!\n/start - start bot and follow instructions\n/addtag - subscribe on new tag tracking\nFor questions : @jstal3x\nproject in developing..."
+
 func New(sc chan string) *Bot {
 	token, exist := os.LookupEnv("TokenForHabrSearcher")
 	if !exist {
@@ -46,24 +49,34 @@ func (b *Bot) Run() {
 			switch update.Message.Command() {
 			case "start":
 				// нужно добавить юзера, трекер, и подписать его туда, запрсив тег
-				msg.Text = "Hello, I can help you to track new posts from habr.com!\nAs soon as the post is published, I'll send you a link\nSo, enter your tag:"
+				msg.Text = startText
 				_, err := b.TgBot.Send(msg)
 				t.Check(err)
 			case "addtag":
 				msg.Text = "Enter new tag:"
 				_, err := b.TgBot.Send(msg)
 				t.Check(err)
+			case "help":
+				msg.Text = helpText
+				_, err := b.TgBot.Send(msg)
+				t.Check(err)
 			}
 		} else {
 			id := update.Message.Chat.ID
 			tag := update.Message.Text
+			if len(tag) > 0 {
+				tagAndId := fmt.Sprintf("%s#%d", tag, id)
+				b.subChannel <- tagAndId
 
-			tagAndId := fmt.Sprintf("%s %d", tag, id)
-			b.subChannel <- tagAndId
+				msg.Text = "Your tag successfully added"
+				_, err := b.TgBot.Send(msg)
+				t.Check(err)
+			} else {
+				msg.Text = "Please, try again"
+				_, err := b.TgBot.Send(msg)
+				t.Check(err)
+			}
 
-			msg.Text = "Your tag successfully added"
-			_, err := b.TgBot.Send(msg)
-			t.Check(err)
 		}
 	}
 

@@ -42,14 +42,11 @@ func (a *App) AddNewTracker(tag string) {
 }
 
 func (a *App) Run() {
-	//a.AddNewTracker("go")
-	//post, _ := a.Trackers["go"].GetNewPost()
-	//fmt.Printf("%v\n", post)
 	go a.TgBot.Run()
 	for {
 		go a.CheckNewPosts()
 		go a.CheckNewSubscribe()
-		time.Sleep(3 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 }
 
@@ -62,12 +59,12 @@ func (a *App) SubscribeNewTagToUser(u User, tag string) {
 		a.AddNewTracker(tag)
 		a.UsersForTag[tag] = make([]User, 0)
 		a.UsersForTag[tag] = append(a.UsersForTag[tag], u)
-		log.Println("SUCCESS")
-		log.Println(a.Trackers)
+		//log.Println("SUCCESS")
+		//log.Println(a.Trackers)
 	} else {
 		a.UsersForTag[tag] = append(a.UsersForTag[tag], u)
-		log.Println("SUCCESS")
-		log.Println(a.Trackers)
+		//log.Println("SUCCESS")
+		//log.Println(a.Trackers)
 	}
 }
 
@@ -85,7 +82,7 @@ func (a *App) CheckNewPosts() {
 func (a *App) CheckNewSubscribe() {
 	str, ok := <-a.subChannel
 	log.Printf("im got info from chan %s %v\n", str, ok)
-	values := strings.Split(str, " ")
+	values := strings.Split(str, "#")
 	tag, id := values[0], values[1]
 	if ok {
 		a.SubscribeNewTagToUser(User{id}, tag)
