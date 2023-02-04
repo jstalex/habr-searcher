@@ -63,12 +63,8 @@ func (a *App) SubscribeNewTagToUser(u Chat, tag string) {
 		a.AddNewTracker(tag)
 		a.UsersForTag[tag] = make([]Chat, 0)
 		a.UsersForTag[tag] = append(a.UsersForTag[tag], u)
-		//log.Println("SUCCESS")
-		//log.Println(a.Trackers)
 	} else {
 		a.UsersForTag[tag] = append(a.UsersForTag[tag], u)
-		//log.Println("SUCCESS")
-		//log.Println(a.Trackers)
 	}
 }
 
