@@ -4,14 +4,16 @@ import (
 	"fmt"
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	t "habr-searcher/internal/Tracker"
+	"habr-searcher/internal/model"
 	"log"
 	"os"
 	"strconv"
 )
 
 type Bot struct {
-	TgBot      *tgbotapi.BotAPI
-	subChannel chan string
+	TgBot        *tgbotapi.BotAPI
+	subChannel   chan string
+	storeChannel chan model.User
 }
 
 const startText string = "Hello, I can help you to track new posts from habr.com!\nAs soon as the post is published, I'll send you a link\nSo, enter your tag:"
@@ -19,7 +21,7 @@ const helpText string = "Welcome!\n/start - start bot and follow instructions\n/
 
 const updateTimeout int = 5
 
-func New(sc chan string) *Bot {
+func New(sc chan string, storec chan model.User) *Bot {
 	token, exist := os.LookupEnv("TokenForHabrSearcher")
 	if !exist {
 		log.Fatal("Token for Tg api does not exist")
@@ -30,8 +32,9 @@ func New(sc chan string) *Bot {
 
 	// tgbot.Debug = true
 	return &Bot{
-		TgBot:      tgbot,
-		subChannel: sc,
+		TgBot:        tgbot,
+		subChannel:   sc,
+		storeChannel: storec,
 	}
 }
 
@@ -50,6 +53,7 @@ func (b *Bot) Run() {
 		if update.Message.IsCommand() {
 			switch update.Message.Command() {
 			case "start":
+				b.storeUser(update.SentFrom())
 				msg.Text = startText
 				b.send(msg)
 			case "addtag":
@@ -89,4 +93,13 @@ func (b *Bot) SendPost(chatId, text string) {
 func (b *Bot) send(msg tgbotapi.Chattable) {
 	_, err := b.TgBot.Send(msg)
 	t.Check(err)
+}
+func (b *Bot) storeUser(u *tgbotapi.User) {
+	storeUser := model.User{
+		Id:        u.ID,
+		FirstName: u.FirstName,
+		LastName:  u.LastName,
+		UserName:  u.UserName,
+	}
+	b.storeChannel <- storeUser
 }
