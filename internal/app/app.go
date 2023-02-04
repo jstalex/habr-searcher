@@ -20,7 +20,6 @@ type App struct {
 	UsersForTag  map[string][]Chat
 	subChannel   chan string
 	storeChannel chan model.User
-	//wg          *sync.WaitGroup
 }
 
 type Chat struct {
@@ -74,7 +73,6 @@ func (a *App) SubscribeNewTagToUser(u Chat, tag string) {
 }
 
 func (a *App) CheckNewPosts() {
-	//defer a.wg.Done()
 	for {
 		for tag, tracker := range a.Trackers {
 			post, exist := tracker.GetNewPost()
@@ -89,7 +87,6 @@ func (a *App) CheckNewPosts() {
 }
 
 func (a *App) CheckNewSubscribe() {
-	//defer a.wg.Done()
 	// auto locking by subChannel
 	for {
 		str, ok := <-a.subChannel
