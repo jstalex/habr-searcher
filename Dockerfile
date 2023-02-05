@@ -1,12 +1,18 @@
-FROM golang:1.19
+FROM golang:alpine AS builder
 
-ENV TokenForHabrSearcher 5623528912:AAGD6aPPzi0xZCWtwK3nJdYf4eIoNgHnULw
+WORKDIR $GOPATH/src/habr-searcher
 
-RUN mkdir /home/habr-searcher
+COPY . .
 
-COPY . /home/habr-searcher 
+RUN go build -o /go/bin/habr-searcher cmd/main.go
 
-WORKDIR /home/habr-searcher
 
-CMD ["make", "run"]
+
+FROM scratch
+
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+
+COPY --from=builder /go/bin/habr-searcher /go/bin/habr-searcher
+
+ENTRYPOINT ["/go/bin/habr-searcher"]
 
