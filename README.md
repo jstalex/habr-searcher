@@ -15,3 +15,6 @@ Set your Telegram API token
 Build & run
 
     $ make run 
+Or use Docker
+    $ docker build -t habr-searcher .
+    $ docker run -d -e TokenForHabrSearcher="<your token>" habr-searcher
