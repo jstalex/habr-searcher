@@ -17,7 +17,7 @@ Build & run
     $ make run 
 
 
-Or use Docker
+## Or use Docker
 
 Build
 
